@@ -64,9 +64,23 @@ if 'chat_history' not in st.session_state:
 
 # Function to get responses from the model
 def get_gemini_response(question):
-    chat_session = model.start_chat(history=st.session_state['chat_history'])
-    response = chat_session.send_message(question)
-    return response
+    try:
+        # Ensure each item in the history has the correct structure
+        history = [
+            {
+                "role": item["role"],
+                "parts": [{"text": item["content"]}]
+            } for item in st.session_state['chat_history']
+        ]
+        chat_session = model.start_chat(history=history)
+        response = chat_session.send_message(question)
+        return response
+    except KeyError as e:
+        st.error(f"An error occurred: {e}")
+        return None
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+        return None
 
 # User input and button
 input_text = st.text_input("Ask a question:", key="input")
@@ -76,13 +90,14 @@ if submit and input_text:
     # Get the response from the model
     response = get_gemini_response(input_text)
     
-    # Add user query and response to chat history
-    st.session_state['chat_history'].append({"role": "user", "content": input_text})
-    st.session_state['chat_history'].append({"role": "assistant", "content": response.text})
+    if response:
+        # Add user query and response to chat history
+        st.session_state['chat_history'].append({"role": "user", "content": input_text})
+        st.session_state['chat_history'].append({"role": "model", "content": response.text})
 
-    # Display the response
-    st.subheader("Response")
-    st.write(response.text)
+        # Display the response
+        st.subheader("Response")
+        st.write(response.text)
 
 # Display chat history
 st.subheader("Chat History")
