@@ -76,10 +76,10 @@ def get_gemini_response(question):
         response = chat_session.send_message(question)
         return response
     except KeyError as e:
-        st.error(f"An error occurred: {e}")
+        st.error(f"A KeyError occurred: {e}")
         return None
     except Exception as e:
-        st.error(f"An error occurred: {e}")
+        st.error(f"An unexpected error occurred: {e}")
         return None
 
 # User input and button
